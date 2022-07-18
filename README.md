@@ -1,27 +1,84 @@
-# MyStoreApi
+# Solicitudes GET
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli)
+El verbo **HTTP GET** en JavaScript suele utilizarse para la obtención de datos. Por ejemplo, una lista de productos o el detalle de un único producto en particular.
 
-## Development server
+# Pasos para el consumo de API con Angular
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+El primer paso para el consumo de API con Angular es la importación del módulo correspondiente y los servicios, luego sigue la siguiente guía para proceder en tu camino.
 
-## Code scaffolding
+## 1. Importa los módulos
+Asegúrate de importar HttpClientModule en el módulo principal de tu proyecto.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-## Build
+```js
+// app.module.ts
+import { HttpClientModule } from '@angular/common/http';
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+@NgModule({
+  declarations: [
+    // ...
+  ],
+  imports: [
+    HttpClientModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
 
-## Running unit tests
+## 2. Crea un servicio en tu proyecto
+Crea un servicio en tu proyecto que será el responsable de todas las peticiones HTTP que tu aplicación necesite. Dicho servicio tiene que importar el cliente HTTP de Angular `HttpClient` para realizar los llamados a una API.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+```js
+// services/api.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
-## Running end-to-end tests
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+  constructor(
+    private http: HttpClient,
+  ) { }
 
-## Further help
+  getProducts(): Observable<Product[]> {
+    return this.http.get<Product[]>(`https://example.com/api/productos`);
+  }
+}
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+## 3. Importa los componentes
+Importa el nuevo servicio en el componente que necesite realizar peticiones HTTP.
+
+```js
+// components/catalogo/catalogo.component.ts
+import { ApiService } from 'src/app/services/api.service';
+
+@Component({
+  selector: 'app-catalogo',
+  templateUrl: './catalogo.component.html',
+  styleUrls: ['./catalogo.component.scss']
+})
+export class CatalogoComponent implements OnInit {
+
+  public productos: Producto[] = [];
+
+  constructor(
+    private apiService: ApiService,
+  ) { }
+
+  ngOnInit(): void {
+    this.apiService.getProducts()
+      .subscribe(res => {
+        this.productos = res;
+      });
+  }
+}
+```
+
+En Angular, cuando un componente tiene la necesidad de realizar una petición HTTP antes de ser renderizado suele utilizarse el hook `ngOnInit()` que forma parte del Ciclo de Vida de un componente.
+
+
