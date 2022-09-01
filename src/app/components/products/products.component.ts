@@ -30,8 +30,9 @@ export class ProductsComponent implements OnInit {
       name: '',
     },
   };
-  limit=10;
-  offset=0;
+  limit = 10;
+  offset = 0;
+  statusDetail: 'loading'|'success'|'error'|'init' = 'init' ;
 
   constructor(
     private storeService: StoreService,
@@ -41,8 +42,7 @@ export class ProductsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.productsService.getProductsByPage(10,0)
-    .subscribe((data) => {
+    this.productsService.getProductsByPage(10, 0).subscribe((data) => {
       this.products = data;
     });
   }
@@ -57,9 +57,16 @@ export class ProductsComponent implements OnInit {
   }
 
   onShowDetail(id: string) {
+    this.statusDetail= 'loading';
+    this.toogleProductDetail();
+
     this.productsService.getProduct(id).subscribe((data) => {
-      this.toogleProductDetail();
+
       this.productChosen = data;
+      this.statusDetail='success';
+    },errorMsg =>{
+      window.alert(errorMsg)
+      this.statusDetail='error';
     });
   }
 
@@ -100,11 +107,12 @@ export class ProductsComponent implements OnInit {
     });
   }
 
-  loadMore(){
-    this.productsService.getProductsByPage(this.limit,this.offset)
-    .subscribe((data) => {
-      this.products = this.products.concat(data);
-      this.offset += this.limit;
-    });
+  loadMore() {
+    this.productsService
+      .getProductsByPage(this.limit, this.offset)
+      .subscribe((data) => {
+        this.products = this.products.concat(data);
+        this.offset += this.limit;
+      });
   }
 }

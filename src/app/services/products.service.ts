@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { retry, } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse, HttpParams, HttpStatusCode } from '@angular/common/http';
+import { catchError, retry,map } from 'rxjs/operators';
 
 import { Product } from './../models/product.model';
 import { CreateProductDTO, UpdateProductDTO } from '../models/product.model';
 
 import { environment } from "../../environments/environment";
+import { throwError } from 'rxjs';
 
 
 @Injectable({
@@ -25,13 +26,32 @@ export class ProductsService {
     }
     return this.http.get<Product[]>(this.urlAPi,{params})
     .pipe(
-      retry(3)
+      retry(3),
+      map(products => products.map(item =>{
+        return  { ...item ,
+        taxes: .16 * item.price
+      }
+      }) )
     )
     ;
   }
 
   getProduct(id: string) {
-    return this.http.get<Product>(`${this.urlAPi}/${id}`);
+    return this.http.get<Product>(`${this.urlAPi}/${id}`)
+    .pipe(
+      catchError((error:HttpErrorResponse)=>{
+        if (error.status === HttpStatusCode.Conflict ){
+          return throwError('algo esta fallando en el servidor ')
+        }
+        if (error.status === HttpStatusCode.NotFound ){
+          return throwError('the product don`t exist ')
+        }
+        if (error.status === HttpStatusCode.Unauthorized ){
+          return throwError('no estas autorisado ')
+        }
+        return throwError('Ups algo salio mal');
+      })
+      )
   }
 
   getProductsByPage(limit: number, offset: number) {
