@@ -884,3 +884,4 @@ readAndUpdate(): void {
 ```
 
 Importando la función `zip`, puedes crear un array de observables y suscribirte a todos ellos al mismo tiempo. Diferenciando por el índice de cada uno el resultado de la operación que ejecutaron para obtenerlo.
+
