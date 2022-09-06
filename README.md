@@ -1,3 +1,5 @@
+# **Http basic**
+
 # Solicitudes GET
 
 El verbo **HTTP GET** en JavaScript suele utilizarse para la obtención de datos. Por ejemplo, una lista de productos o el detalle de un único producto en particular.
@@ -643,6 +645,8 @@ export class ApiService {
 El método `.pipe()` de los observables permite manipular datos y con la función `retry()` de **RxJS** le indicas la cantidad de reintentos que buscas para que la petición lo haga en caso de fallar.
 
 
+# **Bunenas Practicas**
+
 # El problema de CORS
 
 **Cross Origin Resource Sharing (CORS)** o en español, **Intercambio de Recursos de Origen Cruzado**, es un mecanismo de seguridad para la solicitud e intercambio de recursos entre aplicaciones con dominios diferentes. En pocas palabras, si las solicitudes HTTP se realizan desde un dominio diferente al dominio del backend, estas serán rechazadas.
@@ -885,6 +889,10 @@ readAndUpdate(): void {
 
 Importando la función `zip`, puedes crear un array de observables y suscribirte a todos ellos al mismo tiempo. Diferenciando por el índice de cada uno el resultado de la operación que ejecutaron para obtenerlo.
 
+
+# ****Auth****
+
+
 # **Login y manejo de Auth**
 
 Muchas aplicaciones hoy en día requieren de un Login para identificar al usuario y que pueda interactuar con la plataforma.
@@ -914,7 +922,7 @@ export interface User {
 }
 ```
 
-Hemos creado tres interfaces. *
+Hemos creado tres interfaces.
 
 - **Credentials** para tomar los datos necesarios para registrar a un usuario
 - **Login** que contiene la respuesta al registrar exitosamente un usuario
@@ -971,4 +979,52 @@ export class LoginComponent {
 }
 ```
 En este ejemplo, efectuamos el login de un usuario con su email y password. El backend suele devolver el token de autenticación del usuario o un access_token. Lo guardamos en Local Storage o en el store que sea de tu preferencia.
+
+
+# **Manejo de headers**
+
+Luego de que el usuario se halla registrado, puedes utilizar el token para realizar peticiones al backend que requieran de autenticación. Para esto, es necesario inyectar dicho token en las solicitudes HTTP.
+
+# Autenticación del Usuario
+
+Para esto, puedes obtener el token desde Local Storage (o si prefieres guardarlo en Cookies) e inyectarlo directamente en los Headers de la petición.
+
+```js
+// services/auth.service.ts
+getProfileUser(): Observable<User> {
+  const token = localStorage.getItem('platzi_token');
+  return this.http.get<User>(`https://example.com/api/profile`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+}
+```
+
+El protocolo de este tipo de token suele emplear la palabra Bearer seguido de un espacio por delante del propio token.
+
+Puede ser bastante engorroso tener que inyectar el token, método por método en todos los endpoints que necesitas consumir. Puedes simplificar esto con una única función que construya los headers.
+
+```js
+// services/auth.service.ts
+import { HttpHeaders } from '@angular/common/http';
+
+getProfileUser(): Observable<User> {
+  return this.http.post<User>(`https://example.com/api/profile`, this.getHttpHeaders());
+}
+
+getHttpHeaders() {
+  const token = localStorage.getItem('platzi_token');
+  return {
+    headers: new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    })
+  };
+}
+```
+
+La clase `HttpHeaders` construye los header en la función `getHttpHeaders()` y llamas a dicha función para que inyecte los headers en cada solicitud.
+
+
+Es una forma más elegante y limpia de inyectar los headers necesarios en tus solicitudes.
 

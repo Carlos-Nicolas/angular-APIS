@@ -5,6 +5,4 @@ export interface User {
   password: string;
 }
 
-export interface CreateUserDTO extends Omit<User , 'id' >{
-
-}
+export interface CreateUserDTO extends Omit<User, 'id'> {}
