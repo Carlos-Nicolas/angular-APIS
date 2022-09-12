@@ -2,11 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, tap } from 'rxjs/operators';
 import { saveAs } from 'file-saver';
+import { environment } from 'src/environments/environment';
+
+interface File{
+  originalname:string;
+  filename:string;
+  location:string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class FilesService {
+  private urlAPi = `${environment.API_URL}/api/files`;
 
   constructor(
     private http: HttpClient,
@@ -21,6 +29,16 @@ export class FilesService {
       }),
       map(() => true)
     )
-
   }
+
+  uploadFile(file : Blob){
+    const dto = new FormData();
+    dto.append('file',file);
+    return this.http.post(`${this.urlAPi}/upload`,dto,{
+      // headers:{
+      //   'Content-type':"multipart/form-data"
+      // }
+    })
+  }
+
 }
